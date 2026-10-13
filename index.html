@@ -62,6 +62,15 @@ label.btn input{display:none}
 .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
 .hd h3{margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fld{margin-bottom:10px}
+.qrwrap{text-align:center}
+.qrimg{display:inline-block;background:#fff;padding:10px;border-radius:12px;line-height:0}
+.qrimg svg{width:180px;height:180px}
+.qrurl{font-size:12px;color:var(--mute);margin:6px 0 0;word-break:break-all}
+.qrcorner{position:fixed;right:20px;bottom:20px;z-index:50;background:#fff;color:#222;padding:12px 12px 8px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.18);text-align:center;font-size:13px}
+.qrcorner .qrimg{padding:0}
+.qrcorner .qrimg svg{width:140px;height:140px}
+.qrcorner button{position:absolute;top:2px;right:6px;border:0;background:none;font-size:18px;color:#888;cursor:pointer}
+@media (max-width:899px){.qrcorner{display:none}}
 .fld label,.lbl{display:block;font-size:12px;color:var(--mute);margin:0 0 3px}
 .fld input,.fld select{width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 5%,var(--card));outline:none}
 .fld input:focus,.fld select:focus{border-color:var(--accent)}
@@ -125,15 +134,19 @@ label.btn input{display:none}
   <div class="fld"><label data-i18n="language"></label><select id="selLang"></select></div>
   <p class="lbl" style="margin-top:14px" data-i18n="theme"></p>
   <div class="themes" id="themes"></div>
+  <p class="lbl" style="margin-top:16px" data-i18n="share"></p>
+  <div class="qrwrap"><div id="qrSet" class="qrimg"></div><p class="qrurl" id="qrUrl"></p></div>
 </div></div>
+<div id="qrCorner" class="qrcorner" hidden><button id="qrClose" aria-label="close">&times;</button><div id="qrCornerImg" class="qrimg"></div><div data-i18n="scan_try"></div></div>
 <div id="toast" class="toast"></div>
 
+<script src="qrcode.js"></script>
 <script>
 // ===== TRANSLATIONS (every language must have exactly the same keys) =====
 const T = {
-en:{app_sub:"Photo care for plants and seedlings",my_plants:"My plants",add:"Add a plant",empty_title:"No plants yet",empty_hint:"Take a photo of a pot, a tray of seedlings, or veggie scraps that are regrowing.",single:"Single plant",batch:"Batch of seedlings",name_label:"Name (optional, you know best)",name_ph:"e.g. Sunflower tray",location:"Where is it?",indoor:"Indoors",balcony:"Balcony / outdoors",take_photo:"Take photo",from_gallery:"Choose photo",analyzing:"Looking at your plant...",species:"Looks like",unknown_species:"Not sure",stage_seed:"seed",stage_sprouting:"sprouting",stage_seedling:"seedling",stage_young:"young plant",stage_mature:"mature",stage_flowering:"flowering",stage_unknown:"stage unknown",h_good:"Healthy",h_watch:"Keep an eye on it",h_bad:"Needs help",issues:"What I notice",advice:"What to do",count_est:"About {n} plants (an estimate, edit if wrong)",count:"Number of plants",water_every:"Water every (days)",pet_safe:"Safe for cats and dogs",pet_toxic:"Toxic to cats and dogs",pet_unknown:"Pet safety unknown",pet_disc:"AI estimate. Check a trusted source before pets get near it.",low_light:"The photo is dark, so colors may be off. Retake it in daylight.",save:"Save",cancel:"Cancel",delete:"Delete",confirm_delete:"Delete this plant and its photos?",retry:"Try again",ai_fail:"Could not read the photo ({e}). You can still save it and fill in the details yourself.",watered:"Watered",water_in:"Water in {n} day(s)",water_today:"Water today",overdue:"{n} day(s) overdue",check_again:"Check again with a new photo",change_better:"Better than last time",change_same:"About the same",change_worse:"Worse than last time",history:"Photo history",last_watered:"Last watered",ai_note:"AI estimate. You know your plant best.",saved:"Saved",say_happy:"I'm doing great!",say_thirsty:"I'm thirsty...",say_sick:"I don't feel well...",settings:"Settings",language:"Language",theme:"Theme",th_auto:"Auto",th_light:"Light",th_dark:"Dark",th_cream:"Cream",th_olive:"Olive",th_rose:"Rose",th_plum:"Plum",close:"Close",days:"day(s)",unnamed:"My plant"},
-zh:{app_sub:"拍照照顧植物和小苗",my_plants:"我的植物",add:"新增植物",empty_title:"還沒有植物",empty_hint:"拍一盆植物、一盤小苗，或是正在再生的菜根。",single:"單盆",batch:"一批小苗",name_label:"名稱（可不填，你最清楚）",name_ph:"例如：向日葵盤",location:"放在哪裡？",indoor:"室內",balcony:"陽台 / 戶外",take_photo:"拍照",from_gallery:"選照片",analyzing:"正在看你的植物...",species:"看起來是",unknown_species:"不確定",stage_seed:"種子",stage_sprouting:"發芽中",stage_seedling:"幼苗",stage_young:"小植株",stage_mature:"成株",stage_flowering:"開花中",stage_unknown:"階段不明",h_good:"健康",h_watch:"需要留意",h_bad:"需要處理",issues:"我注意到",advice:"建議怎麼做",count_est:"大約 {n} 株（估計，不對可以改）",count:"株數",water_every:"每幾天澆水",pet_safe:"貓狗吃到問題不大",pet_toxic:"對貓狗有毒",pet_unknown:"不確定貓狗能不能碰",pet_disc:"這是 AI 的估計，讓寵物接近前請再查可靠來源。",low_light:"照片太暗，顏色可能不準，建議白天重拍。",save:"儲存",cancel:"取消",delete:"刪除",confirm_delete:"要刪除這株植物和它的照片嗎？",retry:"再試一次",ai_fail:"沒辦法讀取照片（{e}）。你還是可以先儲存，再自己填。",watered:"已澆水",water_in:"{n} 天後澆水",water_today:"今天澆水",overdue:"已超過 {n} 天",check_again:"用新照片再檢查一次",change_better:"比上次好",change_same:"差不多",change_worse:"比上次差",history:"照片紀錄",last_watered:"上次澆水",ai_note:"這是 AI 的估計，你最了解自己的植物。",saved:"已儲存",say_happy:"我很好！",say_thirsty:"我口渴了...",say_sick:"我不太舒服...",settings:"設定",language:"語言",theme:"主題",th_auto:"自動",th_light:"淺色",th_dark:"深色",th_cream:"奶油",th_olive:"橄欖",th_rose:"玫瑰",th_plum:"紫李",close:"關閉",days:"天",unnamed:"我的植物"},
-th:{app_sub:"ถ่ายรูปดูแลต้นไม้และต้นกล้า",my_plants:"ต้นไม้ของฉัน",add:"เพิ่มต้นไม้",empty_title:"ยังไม่มีต้นไม้",empty_hint:"ถ่ายรูปกระถาง ถาดต้นกล้า หรือผักที่กำลังงอกใหม่",single:"ต้นเดียว",batch:"ต้นกล้าหลายต้น",name_label:"ชื่อ (ไม่ใส่ก็ได้ คุณรู้ดีที่สุด)",name_ph:"เช่น ถาดทานตะวัน",location:"วางไว้ที่ไหน",indoor:"ในบ้าน",balcony:"ระเบียง / กลางแจ้ง",take_photo:"ถ่ายรูป",from_gallery:"เลือกรูป",analyzing:"กำลังดูต้นไม้ของคุณ...",species:"น่าจะเป็น",unknown_species:"ไม่แน่ใจ",stage_seed:"เมล็ด",stage_sprouting:"กำลังงอก",stage_seedling:"ต้นกล้า",stage_young:"ต้นอ่อน",stage_mature:"โตเต็มที่",stage_flowering:"กำลังออกดอก",stage_unknown:"ไม่ทราบระยะ",h_good:"แข็งแรง",h_watch:"ควรจับตา",h_bad:"ต้องช่วยด่วน",issues:"สิ่งที่สังเกตเห็น",advice:"ควรทำอะไร",count_est:"ประมาณ {n} ต้น (ประมาณการ แก้ได้ถ้าไม่ถูก)",count:"จำนวนต้น",water_every:"รดน้ำทุก (วัน)",pet_safe:"ปลอดภัยกับแมวและสุนัข",pet_toxic:"เป็นพิษต่อแมวและสุนัข",pet_unknown:"ไม่ทราบว่าปลอดภัยกับสัตว์เลี้ยงหรือไม่",pet_disc:"เป็นการประมาณจาก AI โปรดตรวจสอบแหล่งที่เชื่อถือได้ก่อนให้สัตว์เลี้ยงเข้าใกล้",low_light:"รูปมืด สีอาจไม่ตรง ลองถ่ายใหม่ตอนกลางวัน",save:"บันทึก",cancel:"ยกเลิก",delete:"ลบ",confirm_delete:"ลบต้นไม้นี้และรูปทั้งหมดหรือไม่",retry:"ลองอีกครั้ง",ai_fail:"อ่านรูปไม่ได้ ({e}) ยังบันทึกแล้วกรอกเองได้",watered:"รดน้ำแล้ว",water_in:"รดน้ำใน {n} วัน",water_today:"รดน้ำวันนี้",overdue:"เลยกำหนด {n} วัน",check_again:"ถ่ายรูปใหม่เพื่อตรวจอีกครั้ง",change_better:"ดีกว่าครั้งก่อน",change_same:"เหมือนเดิม",change_worse:"แย่กว่าครั้งก่อน",history:"ประวัติรูป",last_watered:"รดน้ำล่าสุด",ai_note:"เป็นการประมาณจาก AI คุณรู้จักต้นไม้ของคุณดีที่สุด",saved:"บันทึกแล้ว",say_happy:"ฉันสบายดี!",say_thirsty:"ฉันกระหายน้ำ...",say_sick:"ฉันไม่ค่อยสบาย...",settings:"การตั้งค่า",language:"ภาษา",theme:"ธีม",th_auto:"อัตโนมัติ",th_light:"สว่าง",th_dark:"มืด",th_cream:"ครีม",th_olive:"มะกอก",th_rose:"กุหลาบ",th_plum:"ม่วงพลัม",close:"ปิด",days:"วัน",unnamed:"ต้นไม้ของฉัน"}
+en:{app_sub:"Photo care for plants and seedlings",my_plants:"My plants",add:"Add a plant",empty_title:"No plants yet",empty_hint:"Take a photo of a pot, a tray of seedlings, or veggie scraps that are regrowing.",single:"Single plant",batch:"Batch of seedlings",name_label:"Name (optional, you know best)",name_ph:"e.g. Sunflower tray",location:"Where is it?",indoor:"Indoors",balcony:"Balcony / outdoors",take_photo:"Take photo",from_gallery:"Choose photo",analyzing:"Looking at your plant...",species:"Looks like",unknown_species:"Not sure",stage_seed:"seed",stage_sprouting:"sprouting",stage_seedling:"seedling",stage_young:"young plant",stage_mature:"mature",stage_flowering:"flowering",stage_unknown:"stage unknown",h_good:"Healthy",h_watch:"Keep an eye on it",h_bad:"Needs help",issues:"What I notice",advice:"What to do",count_est:"About {n} plants (an estimate, edit if wrong)",count:"Number of plants",water_every:"Water every (days)",pet_safe:"Safe for cats and dogs",pet_toxic:"Toxic to cats and dogs",pet_unknown:"Pet safety unknown",pet_disc:"AI estimate. Check a trusted source before pets get near it.",low_light:"The photo is dark, so colors may be off. Retake it in daylight.",save:"Save",cancel:"Cancel",delete:"Delete",confirm_delete:"Delete this plant and its photos?",retry:"Try again",ai_fail:"Could not read the photo ({e}). You can still save it and fill in the details yourself.",watered:"Watered",water_in:"Water in {n} day(s)",water_today:"Water today",overdue:"{n} day(s) overdue",check_again:"Check again with a new photo",change_better:"Better than last time",change_same:"About the same",change_worse:"Worse than last time",history:"Photo history",last_watered:"Last watered",ai_note:"AI estimate. You know your plant best.",saved:"Saved",say_happy:"I'm doing great!",say_thirsty:"I'm thirsty...",say_sick:"I don't feel well...",settings:"Settings",language:"Language",theme:"Theme",th_auto:"Auto",th_light:"Light",th_dark:"Dark",th_cream:"Cream",th_olive:"Olive",th_rose:"Rose",th_plum:"Plum",close:"Close",days:"day(s)",unnamed:"My plant",share:"Share this app (scan with a phone)",scan_try:"Scan to try on your phone"},
+zh:{app_sub:"拍照照顧植物和小苗",my_plants:"我的植物",add:"新增植物",empty_title:"還沒有植物",empty_hint:"拍一盆植物、一盤小苗，或是正在再生的菜根。",single:"單盆",batch:"一批小苗",name_label:"名稱（可不填，你最清楚）",name_ph:"例如：向日葵盤",location:"放在哪裡？",indoor:"室內",balcony:"陽台 / 戶外",take_photo:"拍照",from_gallery:"選照片",analyzing:"正在看你的植物...",species:"看起來是",unknown_species:"不確定",stage_seed:"種子",stage_sprouting:"發芽中",stage_seedling:"幼苗",stage_young:"小植株",stage_mature:"成株",stage_flowering:"開花中",stage_unknown:"階段不明",h_good:"健康",h_watch:"需要留意",h_bad:"需要處理",issues:"我注意到",advice:"建議怎麼做",count_est:"大約 {n} 株（估計，不對可以改）",count:"株數",water_every:"每幾天澆水",pet_safe:"貓狗吃到問題不大",pet_toxic:"對貓狗有毒",pet_unknown:"不確定貓狗能不能碰",pet_disc:"這是 AI 的估計，讓寵物接近前請再查可靠來源。",low_light:"照片太暗，顏色可能不準，建議白天重拍。",save:"儲存",cancel:"取消",delete:"刪除",confirm_delete:"要刪除這株植物和它的照片嗎？",retry:"再試一次",ai_fail:"沒辦法讀取照片（{e}）。你還是可以先儲存，再自己填。",watered:"已澆水",water_in:"{n} 天後澆水",water_today:"今天澆水",overdue:"已超過 {n} 天",check_again:"用新照片再檢查一次",change_better:"比上次好",change_same:"差不多",change_worse:"比上次差",history:"照片紀錄",last_watered:"上次澆水",ai_note:"這是 AI 的估計，你最了解自己的植物。",saved:"已儲存",say_happy:"我很好！",say_thirsty:"我口渴了...",say_sick:"我不太舒服...",settings:"設定",language:"語言",theme:"主題",th_auto:"自動",th_light:"淺色",th_dark:"深色",th_cream:"奶油",th_olive:"橄欖",th_rose:"玫瑰",th_plum:"紫李",close:"關閉",days:"天",unnamed:"我的植物",share:"分享 app（用手機掃描）",scan_try:"用手機掃描試用"},
+th:{app_sub:"ถ่ายรูปดูแลต้นไม้และต้นกล้า",my_plants:"ต้นไม้ของฉัน",add:"เพิ่มต้นไม้",empty_title:"ยังไม่มีต้นไม้",empty_hint:"ถ่ายรูปกระถาง ถาดต้นกล้า หรือผักที่กำลังงอกใหม่",single:"ต้นเดียว",batch:"ต้นกล้าหลายต้น",name_label:"ชื่อ (ไม่ใส่ก็ได้ คุณรู้ดีที่สุด)",name_ph:"เช่น ถาดทานตะวัน",location:"วางไว้ที่ไหน",indoor:"ในบ้าน",balcony:"ระเบียง / กลางแจ้ง",take_photo:"ถ่ายรูป",from_gallery:"เลือกรูป",analyzing:"กำลังดูต้นไม้ของคุณ...",species:"น่าจะเป็น",unknown_species:"ไม่แน่ใจ",stage_seed:"เมล็ด",stage_sprouting:"กำลังงอก",stage_seedling:"ต้นกล้า",stage_young:"ต้นอ่อน",stage_mature:"โตเต็มที่",stage_flowering:"กำลังออกดอก",stage_unknown:"ไม่ทราบระยะ",h_good:"แข็งแรง",h_watch:"ควรจับตา",h_bad:"ต้องช่วยด่วน",issues:"สิ่งที่สังเกตเห็น",advice:"ควรทำอะไร",count_est:"ประมาณ {n} ต้น (ประมาณการ แก้ได้ถ้าไม่ถูก)",count:"จำนวนต้น",water_every:"รดน้ำทุก (วัน)",pet_safe:"ปลอดภัยกับแมวและสุนัข",pet_toxic:"เป็นพิษต่อแมวและสุนัข",pet_unknown:"ไม่ทราบว่าปลอดภัยกับสัตว์เลี้ยงหรือไม่",pet_disc:"เป็นการประมาณจาก AI โปรดตรวจสอบแหล่งที่เชื่อถือได้ก่อนให้สัตว์เลี้ยงเข้าใกล้",low_light:"รูปมืด สีอาจไม่ตรง ลองถ่ายใหม่ตอนกลางวัน",save:"บันทึก",cancel:"ยกเลิก",delete:"ลบ",confirm_delete:"ลบต้นไม้นี้และรูปทั้งหมดหรือไม่",retry:"ลองอีกครั้ง",ai_fail:"อ่านรูปไม่ได้ ({e}) ยังบันทึกแล้วกรอกเองได้",watered:"รดน้ำแล้ว",water_in:"รดน้ำใน {n} วัน",water_today:"รดน้ำวันนี้",overdue:"เลยกำหนด {n} วัน",check_again:"ถ่ายรูปใหม่เพื่อตรวจอีกครั้ง",change_better:"ดีกว่าครั้งก่อน",change_same:"เหมือนเดิม",change_worse:"แย่กว่าครั้งก่อน",history:"ประวัติรูป",last_watered:"รดน้ำล่าสุด",ai_note:"เป็นการประมาณจาก AI คุณรู้จักต้นไม้ของคุณดีที่สุด",saved:"บันทึกแล้ว",say_happy:"ฉันสบายดี!",say_thirsty:"ฉันกระหายน้ำ...",say_sick:"ฉันไม่ค่อยสบาย...",settings:"การตั้งค่า",language:"ภาษา",theme:"ธีม",th_auto:"อัตโนมัติ",th_light:"สว่าง",th_dark:"มืด",th_cream:"ครีม",th_olive:"มะกอก",th_rose:"กุหลาบ",th_plum:"ม่วงพลัม",close:"ปิด",days:"วัน",unnamed:"ต้นไม้ของฉัน",share:"แชร์แอป (สแกนด้วยมือถือ)",scan_try:"สแกนเพื่อลองบนมือถือ"}
 };
 const LANGS = { en:"English", zh:"繁體中文", th:"ไทย" };
 const LOC = { en:"en-US", zh:"zh-TW", th:"th-TH-u-ca-gregory" };
@@ -429,28 +442,24 @@ function applyLang() {
   if (curId) renderDetail();
 }
 
+// ===== SHARE QR =====
+function initQr() {
+  if (typeof qrcode !== "function") return;
+  const url = location.origin + "/";
+  const qr = qrcode(0, "M"); qr.addData(url); qr.make();
+  const svg = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  $("qrSet").innerHTML = svg; $("qrUrl").textContent = url;
+  $("qrCornerImg").innerHTML = svg;
+  let off = false; try { off = sessionStorage.getItem("pl_qr_off") === "1"; } catch (e) {}
+  $("qrCorner").hidden = off;
+  $("qrClose").onclick = () => { $("qrCorner").hidden = true; try { sessionStorage.setItem("pl_qr_off", "1"); } catch (e) {} };
+}
+
 // ===== START =====
 applyTheme();
 applyLang();
+initQr();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-</script>
-<div id="qrBox" style="display:none;position:fixed;right:20px;bottom:20px;z-index:9999;background:#fff;color:#222;padding:14px 14px 10px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.18);text-align:center;font:14px system-ui,sans-serif">
-  <button id="qrClose" aria-label="close" style="position:absolute;top:4px;right:8px;border:0;background:none;font-size:18px;cursor:pointer;color:#888">×</button>
-  <div id="qrImg"></div>
-  <div style="margin-top:6px">用手機掃描試用</div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script>
-(function () {
-  if (window.innerWidth < 900 || typeof qrcode !== "function") return;
-  var qr = qrcode(0, "M");
-  qr.addData(location.origin + "/");
-  qr.make();
-  document.getElementById("qrImg").innerHTML = qr.createSvgTag({ cellSize: 5, margin: 0 });
-  var box = document.getElementById("qrBox");
-  box.style.display = "block";
-  document.getElementById("qrClose").onclick = function () { box.style.display = "none"; };
-})();
 </script>
 </body>
 </html>
