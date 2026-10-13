@@ -72,7 +72,8 @@ export async function onRequestPost({ request, env }) {
   const models = [env.GEMINI_MODEL || 'gemini-3.5-flash-lite', env.GEMINI_FALLBACK_MODEL || 'gemini-3.8-flash']
     .filter(Boolean).filter((m, i, a) => a.indexOf(m) === i);
   const queue = models.length > 1 ? models : [models[0], models[0]];
-  const deadline = Date.now() + 28000;
+  const started = Date.now();
+  const deadline = started + 50000; // Pages Functions can wait this long; the phone shows a spinner meanwhile
   const notes = [];
   let lowThink = true; // ask the model to think less so it answers faster
 
@@ -83,7 +84,7 @@ export async function onRequestPost({ request, env }) {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${queue[i]}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        signal: AbortSignal.timeout(i < queue.length - 1 ? Math.min(left, 16000) : left),
+        signal: AbortSignal.timeout(i < queue.length - 1 ? Math.min(left, 28000) : left),
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM }] },
           contents: [{ parts }],
@@ -110,7 +111,7 @@ export async function onRequestPost({ request, env }) {
       return reply(200, clean(o, mode, !!body.prevImage));
     } catch (e) {
       console.error('plant failed', queue[i], e && e.name, e && e.message);
-      notes.push(queue[i] + ': ' + (e && e.name === 'TimeoutError' ? 'no answer in time' : String((e && e.message) || e).slice(0, 100)));
+      notes.push(queue[i] + ': ' + (e && e.name === 'TimeoutError' ? 'no answer in ' + Math.round((Date.now() - started) / 1000) + 's' : String((e && e.message) || e).slice(0, 100)));
     }
   }
   return reply(502, { error: notes.join(' | ') || 'Gemini is busy. Try again in a moment.' });

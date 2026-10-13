@@ -251,7 +251,7 @@ function processPhoto(file) {
         c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
         return c.toDataURL("image/jpeg", q);
       };
-      const out = { full: draw(1024, 0.82), thumb: draw(420, 0.65) };
+      const out = { full: draw(800, 0.8), thumb: draw(420, 0.65) };
       URL.revokeObjectURL(url); resolve(out);
     };
     img.onerror = () => reject(new Error("image"));
