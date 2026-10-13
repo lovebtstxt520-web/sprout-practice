@@ -85,7 +85,7 @@ export async function onRequestPost({ request, env }) {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${queue[i]}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        signal: AbortSignal.timeout(i < queue.length - 1 ? Math.min(left, 18000) : left),
+        signal: AbortSignal.timeout(i === 0 ? Math.min(left, 30000) : i < queue.length - 1 ? Math.min(left, 12000) : left), // the main model gets the most time
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM }] },
           contents: [{ parts }],
