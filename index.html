@@ -434,5 +434,23 @@ applyTheme();
 applyLang();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
+<div id="qrBox" style="display:none;position:fixed;right:20px;bottom:20px;z-index:9999;background:#fff;color:#222;padding:14px 14px 10px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.18);text-align:center;font:14px system-ui,sans-serif">
+  <button id="qrClose" aria-label="close" style="position:absolute;top:4px;right:8px;border:0;background:none;font-size:18px;cursor:pointer;color:#888">×</button>
+  <div id="qrImg"></div>
+  <div style="margin-top:6px">用手機掃描試用</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function () {
+  if (window.innerWidth < 900 || typeof qrcode !== "function") return;
+  var qr = qrcode(0, "M");
+  qr.addData(location.origin + "/");
+  qr.make();
+  document.getElementById("qrImg").innerHTML = qr.createSvgTag({ cellSize: 5, margin: 0 });
+  var box = document.getElementById("qrBox");
+  box.style.display = "block";
+  document.getElementById("qrClose").onclick = function () { box.style.display = "none"; };
+})();
+</script>
 </body>
 </html>
