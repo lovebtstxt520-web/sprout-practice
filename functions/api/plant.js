@@ -1,23 +1,3 @@
-
-/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Plant · JS
 // Cloudflare Pages Function: POST /api/plant  (plant / seedling photo -> structured care info)
 // Settings (Cloudflare project, Variables and secrets): GEMINI_API_KEY (secret), GEMINI_MODEL (optional), GEMINI_FALLBACK_MODEL (optional)
 //
@@ -30,9 +10,9 @@ Plant · JS
 //   { species, confidence, stage, count, health, issues[], advice[], waterEveryDays, petSafety, petNote,
 //     lowLight, change, changeNote }
 // Response error: { error: string }
- 
+
 const LANG = { en: 'English', zh: 'Traditional Chinese', th: 'Thai' };
- 
+
 const SYSTEM = [
   'You are an experienced home grower who helps people keep plants, seedlings and regrown kitchen scraps alive in Bangkok, Thailand',
   '(hot, humid, strong sun on balconies, a rainy season from about May to October, little real winter).',
@@ -57,23 +37,23 @@ const SYSTEM = [
   'changeNote (one short sentence describing what changed since the previous photo, or empty).',
   'Never invent precision: counts and heights are estimates.'
 ].join(' ');
- 
+
 export async function onRequestPost({ request, env }) {
   const key = env.GEMINI_API_KEY || env.GOOGLE_API_KEY;
   if (!key) return reply(500, { error: 'GEMINI_API_KEY is not set in Cloudflare.' });
- 
+
   let body;
   try { body = await request.json(); } catch (e) { return reply(400, { error: 'Bad request.' }); }
   const ok = (s) => typeof s === 'string' && s.length > 0 && s.length <= 3000000;
   if (!ok(body.image)) return reply(400, { error: 'Send a photo (jpeg, base64, under about 2 MB).' });
   if (body.prevImage != null && !ok(body.prevImage)) return reply(400, { error: 'Previous photo is invalid or too large.' });
- 
+
   const lang = LANG[body.lang] ? body.lang : 'en';
   const mode = body.mode === 'batch' ? 'batch' : 'single';
   const name = typeof body.name === 'string' ? body.name.trim().slice(0, 60) : '';
   const where = body.location === 'balcony' ? 'balcony (outdoor, strong sun and rain exposure)' : 'indoors';
   const since = Number.isFinite(Number(body.daysSinceWatered)) ? Math.max(0, Math.round(Number(body.daysSinceWatered))) : null;
- 
+
   const parts = [];
   if (body.prevImage) {
     parts.push({ text: 'PREVIOUS photo (older):' });
@@ -88,7 +68,7 @@ export async function onRequestPost({ request, env }) {
     (since !== null ? ' It was last watered ' + since + ' day(s) ago.' : '') +
     (body.prevImage ? ' Compare CURRENT with PREVIOUS and fill change and changeNote.' : ' There is no previous photo: set change to null and changeNote to an empty string.') +
     ' Write species, issues, advice, petNote and changeNote in ' + LANG[lang] + '.' });
- 
+
   // tried in order: main model, backup model, then the main model once more (busy spikes are often short)
   const main = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
   const backup = env.GEMINI_FALLBACK_MODEL || 'gemini-3.8-flash';
@@ -97,7 +77,7 @@ export async function onRequestPost({ request, env }) {
   const deadline = started + 50000; // Pages Functions can wait this long; the phone shows a spinner meanwhile
   const notes = [];
   let lowThink = true; // ask the model to think less so it answers faster
- 
+
   for (let i = 0; i < queue.length; i++) {
     const left = deadline - Date.now();
     if (left < 3000) break;
@@ -137,9 +117,9 @@ export async function onRequestPost({ request, env }) {
   }
   return reply(502, { error: notes.join(' | ') || 'Gemini is busy. Try again in a moment.' });
 }
- 
+
 export async function onRequest() { return reply(405, { error: 'Use POST.' }); }
- 
+
 function oneOf(v, list, d) { return list.includes(v) ? v : d; }
 function strs(a, n) { return (Array.isArray(a) ? a : []).map((x) => String(x).slice(0, 160)).filter(Boolean).slice(0, n); }
 function clean(o, mode, hasPrev) {
@@ -165,5 +145,3 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function reply(status, obj) {
   return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } });
 }
- 
-Claude finished the response
