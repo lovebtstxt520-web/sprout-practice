@@ -69,7 +69,8 @@ export async function onRequestPost({ request, env }) {
     (body.prevImage ? ' Compare CURRENT with PREVIOUS and fill change and changeNote.' : ' There is no previous photo: set change to null and changeNote to an empty string.') +
     ' Write species, issues, advice, petNote and changeNote in ' + LANG[lang] + '.' });
 
-  const models = [env.GEMINI_MODEL || 'gemini-3.5-flash-lite', env.GEMINI_FALLBACK_MODEL || 'gemini-3.8-flash']
+  // tried in order; the last one is an older, usually less busy model
+  const models = [env.GEMINI_MODEL || 'gemini-3.5-flash-lite', env.GEMINI_FALLBACK_MODEL || 'gemini-3.8-flash', env.GEMINI_FALLBACK_MODEL2 || 'gemini-2.5-flash-lite']
     .filter(Boolean).filter((m, i, a) => a.indexOf(m) === i);
   const queue = models.length > 1 ? models : [models[0], models[0]];
   const started = Date.now();
@@ -84,7 +85,7 @@ export async function onRequestPost({ request, env }) {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${queue[i]}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        signal: AbortSignal.timeout(i < queue.length - 1 ? Math.min(left, 28000) : left),
+        signal: AbortSignal.timeout(i < queue.length - 1 ? Math.min(left, 18000) : left),
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM }] },
           contents: [{ parts }],
