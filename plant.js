@@ -69,10 +69,10 @@ export async function onRequestPost({ request, env }) {
     (body.prevImage ? ' Compare CURRENT with PREVIOUS and fill change and changeNote.' : ' There is no previous photo: set change to null and changeNote to an empty string.') +
     ' Write species, issues, advice, petNote and changeNote in ' + LANG[lang] + '.' });
 
-  // tried in order; the last one is an older, usually less busy model
-  const models = [env.GEMINI_MODEL || 'gemini-3.5-flash-lite', env.GEMINI_FALLBACK_MODEL || 'gemini-3.8-flash', env.GEMINI_FALLBACK_MODEL2 || 'gemini-2.5-flash-lite']
-    .filter(Boolean).filter((m, i, a) => a.indexOf(m) === i);
-  const queue = models.length > 1 ? models : [models[0], models[0]];
+  // tried in order: main model, backup model, then the main model once more (busy spikes are often short)
+  const main = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+  const backup = env.GEMINI_FALLBACK_MODEL || 'gemini-3.8-flash';
+  const queue = main === backup ? [main, main, main] : [main, backup, main];
   const started = Date.now();
   const deadline = started + 50000; // Pages Functions can wait this long; the phone shows a spinner meanwhile
   const notes = [];
@@ -99,7 +99,7 @@ export async function onRequestPost({ request, env }) {
         console.error('Gemini error', queue[i], res.status, msg);
         notes.push(queue[i] + ' (' + res.status + '): ' + String(msg).slice(0, 90));
         if (res.status === 400 && lowThink && /think/i.test(msg)) { lowThink = false; i--; continue; } // model does not accept the setting: retry without it
-        if (res.status === 429 || res.status === 503 || res.status === 500) { await sleep(700); continue; }
+        if (res.status === 429 || res.status === 503 || res.status === 500) { await sleep(1500); continue; }
         break;
       }
       const cand = data.candidates && data.candidates[0];
