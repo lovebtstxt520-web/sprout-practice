@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef3f1">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Sprout</title>
+<style>
+:root{--bg:#eef3f1;--card:#fff;--ink:#16302b;--mute:#5d746e;--line:#d3e0db;--accent:#0f766e;--accent-ink:#fff;--err:#b4301f;--ok:#15803d;--warn:#b45309}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){--bg:#0e1b18;--card:#162824;--ink:#e6f1ee;--mute:#92aaa4;--line:#27403a;--accent:#3fc1b2;--accent-ink:#06201c;--err:#ff8b78;--ok:#4ade80;--warn:#fbbf24}}
+[data-theme=light]{--bg:#eef3f1;--card:#fff;--ink:#16302b;--mute:#5d746e;--line:#d3e0db;--accent:#0f766e;--accent-ink:#fff;--err:#b4301f;--ok:#15803d;--warn:#b45309}
+[data-theme=dark]{--bg:#0e1b18;--card:#162824;--ink:#e6f1ee;--mute:#92aaa4;--line:#27403a;--accent:#3fc1b2;--accent-ink:#06201c;--err:#ff8b78;--ok:#4ade80;--warn:#fbbf24}
+[data-theme=cream]{--bg:#fbf3dc;--card:#fffaf0;--ink:#3a2a10;--mute:#7a6540;--line:#eadcb4;--accent:#8a5a00;--accent-ink:#fff;--err:#b4301f;--ok:#15803d;--warn:#b45309}
+[data-theme=olive]{--bg:#eaeddb;--card:#f6f7ec;--ink:#2c3319;--mute:#646b4a;--line:#d3d8b8;--accent:#55672a;--accent-ink:#fff;--err:#b4301f;--ok:#15803d;--warn:#b45309}
+[data-theme=rose]{--bg:#f7e9ea;--card:#fff6f6;--ink:#3a1a22;--mute:#86565f;--line:#ecd0d3;--accent:#a8475a;--accent-ink:#fff;--err:#b4301f;--ok:#15803d;--warn:#b45309}
+[data-theme=plum]{--bg:#17101f;--card:#211830;--ink:#efe6f7;--mute:#b0a0c2;--line:#35264a;--accent:#c9a3e6;--accent-ink:#1a0f26;--err:#ff8b78;--ok:#4ade80;--warn:#fbbf24}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Thai","Noto Sans TC",sans-serif;padding-bottom:110px}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:460px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;padding-top:6px}
+h1{font-size:22px;margin:0}
+.sub{font-size:12px;color:var(--mute);margin:2px 0 0}
+.ibtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer}
+.ibtn svg{width:19px;height:19px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+h2{font-size:15px;margin:18px 0 8px;color:var(--mute)}
+ul{list-style:none;margin:0;padding:0}
+.plant{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;margin-bottom:10px;cursor:pointer}
+.thumb{width:62px;height:62px;border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--accent) 10%,var(--card));flex:none;display:grid;place-items:center}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.pmain{flex:1;min-width:0}
+.pname{margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psub{margin:1px 0 5px;font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:11px;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--ink) 9%,var(--card));color:var(--mute)}
+.chip.good,.chip.safe{background:color-mix(in srgb,var(--ok) 16%,var(--card));color:var(--ok)}
+.chip.watch,.chip.unknown{background:color-mix(in srgb,var(--warn) 16%,var(--card));color:var(--warn)}
+.chip.bad,.chip.toxic{background:color-mix(in srgb,var(--err) 14%,var(--card));color:var(--err)}
+.ring{flex:none;position:relative}
+.ring svg{display:block}
+.ring .tr{stroke:color-mix(in srgb,var(--ink) 10%,var(--card))}
+.ring .pg{stroke:var(--ok);transition:stroke-dashoffset .6s}
+.ring.warn .pg{stroke:var(--warn)}.ring.bad .pg{stroke:var(--err)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:inherit}
+.empty{text-align:center;padding:30px 10px;color:var(--mute)}
+.empty h3{color:var(--ink);margin:10px 0 4px}
+.bottom{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.bottom .in{max-width:460px;margin:0 auto}
+.btn{border:0;border-radius:14px;padding:13px 16px;cursor:pointer;font-weight:700;background:var(--accent);color:var(--accent-ink);text-align:center;display:inline-block}
+.btn.sec{background:color-mix(in srgb,var(--ink) 9%,var(--card));color:var(--ink);font-weight:600}
+.btn.dng{background:color-mix(in srgb,var(--err) 14%,var(--card));color:var(--err)}
+.btn.full{width:100%;display:block}
+.btn:disabled{opacity:.5}
+label.btn input{display:none}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:40}
+.ov.open{display:flex}
+.sheet{background:var(--card);width:100%;max-width:460px;border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:93vh;overflow:auto}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
+.hd h3{margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fld{margin-bottom:10px}
+.fld label,.lbl{display:block;font-size:12px;color:var(--mute);margin:0 0 3px}
+.fld input,.fld select{width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 5%,var(--card));outline:none}
+.fld input:focus,.fld select:focus{border-color:var(--accent)}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+.seg button{flex:1;padding:10px;border-radius:12px;border:1px solid var(--line);background:none;cursor:pointer;font-weight:600;color:var(--mute)}
+.seg button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acts{display:flex;gap:8px;margin-top:8px}.acts>*{flex:1}
+.hero{text-align:center;margin:4px 0 6px}
+.say{margin:2px 0 0;color:var(--mute);font-size:14px}
+.ringrow{display:flex;align-items:center;gap:14px;background:color-mix(in srgb,var(--accent) 7%,var(--card));border-radius:16px;padding:12px;margin:8px 0}
+.ringrow .tx{flex:1}
+.ringrow .big{font-size:17px;font-weight:700;margin:0}
+.box{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0;font-size:14px}
+.box h4{margin:0 0 4px;font-size:13px;color:var(--mute)}
+.box ul{padding-left:18px;list-style:disc;margin:0}
+.preview{width:100%;max-height:180px;object-fit:cover;border-radius:14px;margin-bottom:10px}
+.hint{font-size:12px;color:var(--mute);margin:6px 0}
+.warnbox{font-size:13px;color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0}
+.errbox{font-size:13px;color:var(--err);background:color-mix(in srgb,var(--err) 12%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0}
+.hist{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.hist figure{margin:0;flex:none;width:76px;text-align:center}
+.hist img{width:76px;height:76px;object-fit:cover;border-radius:12px;display:block;border:3px solid var(--line)}
+.hist img.good{border-color:var(--ok)}.hist img.watch{border-color:var(--warn)}.hist img.bad{border-color:var(--err)}
+.hist figcaption{font-size:11px;color:var(--mute);margin-top:2px}
+.themes{display:flex;flex-wrap:wrap;gap:8px}
+.themes button{display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;border-radius:99px;border:2px solid var(--line);background:none;cursor:pointer;font-size:13px}
+.themes button.on{border-color:var(--accent)}
+.themes i{width:20px;height:20px;border-radius:50%;border:1px solid rgba(0,0,0,.2);display:block}
+.spin{width:40px;height:40px;border:4px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;margin:20px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.splash .drop{animation:fall 1s ease-in}
+@keyframes fall{0%{transform:translateY(-14px);opacity:0}30%{opacity:1}100%{transform:translateY(22px);opacity:0}}
+.bounce{animation:bn .6s}
+@keyframes bn{0%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:13px;z-index:70;opacity:0;pointer-events:none;transition:opacity .25s;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Sprout</h1><p class="sub" data-i18n="app_sub"></p></div>
+    <button class="ibtn" id="btnSettings" aria-label="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+  <h2 data-i18n="my_plants"></h2>
+  <ul id="list"></ul>
+  <div id="empty" class="empty" hidden></div>
+</div>
+
+<div class="bottom"><div class="in"><button class="btn full" id="btnAdd" data-i18n="add"></button></div></div>
+
+<!-- add sheet -->
+<div id="sheetAdd" class="ov"><div class="sheet" id="addBody"></div></div>
+<!-- detail sheet -->
+<div id="sheetDetail" class="ov"><div class="sheet" id="detailBody"></div></div>
+<!-- settings -->
+<div id="sheetSet" class="ov"><div class="sheet">
+  <div class="hd"><h3 data-i18n="settings"></h3><button class="btn sec" data-close="sheetSet" data-i18n="close"></button></div>
+  <div class="fld"><label data-i18n="language"></label><select id="selLang"></select></div>
+  <p class="lbl" style="margin-top:14px" data-i18n="theme"></p>
+  <div class="themes" id="themes"></div>
+</div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+// ===== TRANSLATIONS (every language must have exactly the same keys) =====
+const T = {
+en:{app_sub:"Photo care for plants and seedlings",my_plants:"My plants",add:"Add a plant",empty_title:"No plants yet",empty_hint:"Take a photo of a pot, a tray of seedlings, or veggie scraps that are regrowing.",single:"Single plant",batch:"Batch of seedlings",name_label:"Name (optional, you know best)",name_ph:"e.g. Sunflower tray",location:"Where is it?",indoor:"Indoors",balcony:"Balcony / outdoors",take_photo:"Take photo",from_gallery:"Choose photo",analyzing:"Looking at your plant...",species:"Looks like",unknown_species:"Not sure",stage_seed:"seed",stage_sprouting:"sprouting",stage_seedling:"seedling",stage_young:"young plant",stage_mature:"mature",stage_flowering:"flowering",stage_unknown:"stage unknown",h_good:"Healthy",h_watch:"Keep an eye on it",h_bad:"Needs help",issues:"What I notice",advice:"What to do",count_est:"About {n} plants (an estimate, edit if wrong)",count:"Number of plants",water_every:"Water every (days)",pet_safe:"Safe for cats and dogs",pet_toxic:"Toxic to cats and dogs",pet_unknown:"Pet safety unknown",pet_disc:"AI estimate. Check a trusted source before pets get near it.",low_light:"The photo is dark, so colors may be off. Retake it in daylight.",save:"Save",cancel:"Cancel",delete:"Delete",confirm_delete:"Delete this plant and its photos?",retry:"Try again",ai_fail:"Could not read the photo ({e}). You can still save it and fill in the details yourself.",watered:"Watered",water_in:"Water in {n} day(s)",water_today:"Water today",overdue:"{n} day(s) overdue",check_again:"Check again with a new photo",change_better:"Better than last time",change_same:"About the same",change_worse:"Worse than last time",history:"Photo history",last_watered:"Last watered",ai_note:"AI estimate. You know your plant best.",saved:"Saved",say_happy:"I'm doing great!",say_thirsty:"I'm thirsty...",say_sick:"I don't feel well...",settings:"Settings",language:"Language",theme:"Theme",th_auto:"Auto",th_light:"Light",th_dark:"Dark",th_cream:"Cream",th_olive:"Olive",th_rose:"Rose",th_plum:"Plum",close:"Close",days:"day(s)",unnamed:"My plant"},
+zh:{app_sub:"拍照照顧植物和小苗",my_plants:"我的植物",add:"新增植物",empty_title:"還沒有植物",empty_hint:"拍一盆植物、一盤小苗，或是正在再生的菜根。",single:"單盆",batch:"一批小苗",name_label:"名稱（可不填，你最清楚）",name_ph:"例如：向日葵盤",location:"放在哪裡？",indoor:"室內",balcony:"陽台 / 戶外",take_photo:"拍照",from_gallery:"選照片",analyzing:"正在看你的植物...",species:"看起來是",unknown_species:"不確定",stage_seed:"種子",stage_sprouting:"發芽中",stage_seedling:"幼苗",stage_young:"小植株",stage_mature:"成株",stage_flowering:"開花中",stage_unknown:"階段不明",h_good:"健康",h_watch:"需要留意",h_bad:"需要處理",issues:"我注意到",advice:"建議怎麼做",count_est:"大約 {n} 株（估計，不對可以改）",count:"株數",water_every:"每幾天澆水",pet_safe:"貓狗吃到問題不大",pet_toxic:"對貓狗有毒",pet_unknown:"不確定貓狗能不能碰",pet_disc:"這是 AI 的估計，讓寵物接近前請再查可靠來源。",low_light:"照片太暗，顏色可能不準，建議白天重拍。",save:"儲存",cancel:"取消",delete:"刪除",confirm_delete:"要刪除這株植物和它的照片嗎？",retry:"再試一次",ai_fail:"沒辦法讀取照片（{e}）。你還是可以先儲存，再自己填。",watered:"已澆水",water_in:"{n} 天後澆水",water_today:"今天澆水",overdue:"已超過 {n} 天",check_again:"用新照片再檢查一次",change_better:"比上次好",change_same:"差不多",change_worse:"比上次差",history:"照片紀錄",last_watered:"上次澆水",ai_note:"這是 AI 的估計，你最了解自己的植物。",saved:"已儲存",say_happy:"我很好！",say_thirsty:"我口渴了...",say_sick:"我不太舒服...",settings:"設定",language:"語言",theme:"主題",th_auto:"自動",th_light:"淺色",th_dark:"深色",th_cream:"奶油",th_olive:"橄欖",th_rose:"玫瑰",th_plum:"紫李",close:"關閉",days:"天",unnamed:"我的植物"},
+th:{app_sub:"ถ่ายรูปดูแลต้นไม้และต้นกล้า",my_plants:"ต้นไม้ของฉัน",add:"เพิ่มต้นไม้",empty_title:"ยังไม่มีต้นไม้",empty_hint:"ถ่ายรูปกระถาง ถาดต้นกล้า หรือผักที่กำลังงอกใหม่",single:"ต้นเดียว",batch:"ต้นกล้าหลายต้น",name_label:"ชื่อ (ไม่ใส่ก็ได้ คุณรู้ดีที่สุด)",name_ph:"เช่น ถาดทานตะวัน",location:"วางไว้ที่ไหน",indoor:"ในบ้าน",balcony:"ระเบียง / กลางแจ้ง",take_photo:"ถ่ายรูป",from_gallery:"เลือกรูป",analyzing:"กำลังดูต้นไม้ของคุณ...",species:"น่าจะเป็น",unknown_species:"ไม่แน่ใจ",stage_seed:"เมล็ด",stage_sprouting:"กำลังงอก",stage_seedling:"ต้นกล้า",stage_young:"ต้นอ่อน",stage_mature:"โตเต็มที่",stage_flowering:"กำลังออกดอก",stage_unknown:"ไม่ทราบระยะ",h_good:"แข็งแรง",h_watch:"ควรจับตา",h_bad:"ต้องช่วยด่วน",issues:"สิ่งที่สังเกตเห็น",advice:"ควรทำอะไร",count_est:"ประมาณ {n} ต้น (ประมาณการ แก้ได้ถ้าไม่ถูก)",count:"จำนวนต้น",water_every:"รดน้ำทุก (วัน)",pet_safe:"ปลอดภัยกับแมวและสุนัข",pet_toxic:"เป็นพิษต่อแมวและสุนัข",pet_unknown:"ไม่ทราบว่าปลอดภัยกับสัตว์เลี้ยงหรือไม่",pet_disc:"เป็นการประมาณจาก AI โปรดตรวจสอบแหล่งที่เชื่อถือได้ก่อนให้สัตว์เลี้ยงเข้าใกล้",low_light:"รูปมืด สีอาจไม่ตรง ลองถ่ายใหม่ตอนกลางวัน",save:"บันทึก",cancel:"ยกเลิก",delete:"ลบ",confirm_delete:"ลบต้นไม้นี้และรูปทั้งหมดหรือไม่",retry:"ลองอีกครั้ง",ai_fail:"อ่านรูปไม่ได้ ({e}) ยังบันทึกแล้วกรอกเองได้",watered:"รดน้ำแล้ว",water_in:"รดน้ำใน {n} วัน",water_today:"รดน้ำวันนี้",overdue:"เลยกำหนด {n} วัน",check_again:"ถ่ายรูปใหม่เพื่อตรวจอีกครั้ง",change_better:"ดีกว่าครั้งก่อน",change_same:"เหมือนเดิม",change_worse:"แย่กว่าครั้งก่อน",history:"ประวัติรูป",last_watered:"รดน้ำล่าสุด",ai_note:"เป็นการประมาณจาก AI คุณรู้จักต้นไม้ของคุณดีที่สุด",saved:"บันทึกแล้ว",say_happy:"ฉันสบายดี!",say_thirsty:"ฉันกระหายน้ำ...",say_sick:"ฉันไม่ค่อยสบาย...",settings:"การตั้งค่า",language:"ภาษา",theme:"ธีม",th_auto:"อัตโนมัติ",th_light:"สว่าง",th_dark:"มืด",th_cream:"ครีม",th_olive:"มะกอก",th_rose:"กุหลาบ",th_plum:"ม่วงพลัม",close:"ปิด",days:"วัน",unnamed:"ต้นไม้ของฉัน"}
+};
+const LANGS = { en:"English", zh:"繁體中文", th:"ไทย" };
+const LOC = { en:"en-US", zh:"zh-TW", th:"th-TH-u-ca-gregory" };
+const THEMES = { auto:["th_auto","linear-gradient(135deg,#eef3f1 50%,#0e1b18 50%)"], light:["th_light","#eef3f1"], dark:["th_dark","#0e1b18"], cream:["th_cream","#fbf3dc"], olive:["th_olive","#eaeddb"], rose:["th_rose","#f7e9ea"], plum:["th_plum","#17101f"] };
+const THEME_COLOR = { light:"#eef3f1", dark:"#0e1b18", cream:"#fbf3dc", olive:"#eaeddb", rose:"#f7e9ea", plum:"#17101f" };
+
+// ===== HELPERS =====
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+const DAY = 86400000;
+const startOfDay = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
+
+let lang = lsGet("pl_lang");
+if (!T[lang]) { const n = (navigator.language || "en").toLowerCase(); lang = n.startsWith("zh") ? "zh" : n.startsWith("th") ? "th" : "en"; }
+let theme = lsGet("pl_theme"); if (!THEMES[theme]) theme = "auto";
+let plants = [];
+try { plants = JSON.parse(lsGet("pl_plants")) || []; } catch (e) { plants = []; }
+if (!Array.isArray(plants)) plants = [];
+
+function t(k, v) {
+  let s = (T[lang] && T[lang][k]) || T.en[k] || k;
+  if (v) for (const x in v) s = s.split("{" + x + "}").join(v[x]);
+  return s;
+}
+function persist() {
+  const tryStore = () => lsSet("pl_plants", JSON.stringify(plants));
+  if (tryStore()) return true;
+  // storage full: keep the first and the 3 newest photos of each plant, then retry
+  plants.forEach(p => { if (p.photos.length > 4) p.photos = [p.photos[0]].concat(p.photos.slice(-3)); });
+  return tryStore();
+}
+function toast(msg) { const el = $("toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(toast.tm); toast.tm = setTimeout(() => el.classList.remove("show"), 2500); }
+
+// ===== PLANT LOGIC =====
+function daysLeft(p) {
+  const due = startOfDay(p.lastWatered) + p.waterEvery * DAY;
+  return Math.round((due - startOfDay(Date.now())) / DAY);
+}
+function moodOf(p) { return p.health === "bad" ? "sick" : daysLeft(p) <= 0 ? "thirsty" : "happy"; }
+function waterText(p) { const d = daysLeft(p); return d < 0 ? t("overdue", { n: -d }) : d === 0 ? t("water_today") : t("water_in", { n: d }); }
+function stageText(p) { return t("stage_" + (p.stage || "unknown")); }
+function subLine(p) { return [p.kind === "batch" && p.count ? "x" + p.count : "", p.species && p.species !== "unknown" ? p.species : "", stageText(p)].filter(Boolean).join(" · "); }
+function petText(s) { return t(s === "safe" ? "pet_safe" : s === "toxic" ? "pet_toxic" : "pet_unknown"); }
+
+// ===== SMALL DRAWINGS =====
+function charSvg(mood, size) {
+  const leaf = mood === "sick" ? "#c9b84a" : "#5cc16b";
+  const eyes = mood === "sick"
+    ? '<path d="M37 69l8 7M45 69l-8 7M55 69l8 7M63 69l-8 7" stroke="#3b2a14" stroke-width="2.4" stroke-linecap="round"/>'
+    : '<circle cx="41" cy="72" r="3.4" fill="#3b2a14"/><circle cx="59" cy="72" r="3.4" fill="#3b2a14"/><circle cx="42.2" cy="70.8" r="1.1" fill="#fff"/><circle cx="60.2" cy="70.8" r="1.1" fill="#fff"/>';
+  const mouth = mood === "happy" ? '<path d="M44 79q6 6 12 0" fill="none" stroke="#3b2a14" stroke-width="2.4" stroke-linecap="round"/>'
+    : mood === "thirsty" ? '<path d="M44 83q6-5 12 0" fill="none" stroke="#3b2a14" stroke-width="2.4" stroke-linecap="round"/><path class="drop" d="M70 64q4 6 0 9q-4-3 0-9z" fill="#6ec6f0"/>'
+    : '<path d="M44 82h12" stroke="#3b2a14" stroke-width="2.4" stroke-linecap="round"/>';
+  const droop = mood === "happy" ? "" : ' transform="rotate(14 50 34)"';
+  return '<svg viewBox="0 0 100 100" width="' + size + '" height="' + size + '" aria-hidden="true">' +
+    '<path d="M50 54C50 44 50 36 50 30" stroke="#3f9b4f" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+    '<g' + droop + '><path d="M50 34C38 18 22 22 24 36C36 40 46 38 50 34z" fill="' + leaf + '"/><path d="M50 30C62 12 80 16 78 30C66 34 54 34 50 30z" fill="' + leaf + '"/></g>' +
+    '<rect x="20" y="52" width="60" height="11" rx="5.5" fill="#d98f4e"/>' +
+    '<path d="M25 63h50l-5 29q-1 5-7 5H37q-6 0-7-5z" fill="#e8a86b"/>' +
+    '<ellipse cx="34" cy="78" rx="4.5" ry="3" fill="#f4a7a0" opacity=".7"/><ellipse cx="66" cy="78" rx="4.5" ry="3" fill="#f4a7a0" opacity=".7"/>' +
+    eyes + mouth + '</svg>';
+}
+function ringHtml(p, size) {
+  const d = daysLeft(p), r = size / 2 - 5, c = 2 * Math.PI * r;
+  const frac = Math.max(0, Math.min(1, d / p.waterEvery));
+  const cls = d < 0 ? "bad" : d <= 1 ? "warn" : "";
+  return '<div class="ring ' + cls + '" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size / 3) + 'px">' +
+    '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + " " + size + '" style="transform:rotate(-90deg)">' +
+    '<circle class="tr" cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" fill="none" stroke-width="6"/>' +
+    '<circle class="pg" cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (c * (1 - frac)).toFixed(1) + '"/></svg>' +
+    "<b>" + (d < 0 ? "!" : d) + "</b></div>";
+}
+function petChip(s) { return '<span class="chip ' + esc(s) + '">' + esc(petText(s)) + "</span>"; }
+
+// ===== HOME =====
+function renderList() {
+  const order = plants.slice().sort((a, b) => daysLeft(a) - daysLeft(b));
+  $("list").innerHTML = order.map(p => {
+    const last = p.photos[p.photos.length - 1];
+    return '<li class="plant" data-id="' + esc(p.id) + '"><div class="thumb">' + (last ? '<img alt="" src="' + esc(last.thumb) + '">' : charSvg(moodOf(p), 48)) + "</div>" +
+      '<div class="pmain"><p class="pname">' + esc(p.name) + '</p><p class="psub">' + esc(subLine(p)) + "</p>" +
+      '<div class="chips"><span class="chip ' + esc(p.health) + '">' + esc(t("h_" + p.health)) + "</span>" + petChip(p.petSafety) + "</div></div>" + ringHtml(p, 56) + "</li>";
+  }).join("");
+  const e = $("empty");
+  e.hidden = plants.length > 0;
+  e.innerHTML = charSvg("happy", 110) + "<h3>" + esc(t("empty_title")) + "</h3><p>" + esc(t("empty_hint")) + "</p>";
+}
+$("list").addEventListener("click", ev => { const li = ev.target.closest(".plant"); if (li) openDetail(li.dataset.id); });
+
+// ===== PHOTO + AI =====
+function processPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const draw = (max, q) => {
+        const r = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(img.width * r)); c.height = Math.max(1, Math.round(img.height * r));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        return c.toDataURL("image/jpeg", q);
+      };
+      const out = { full: draw(1024, 0.82), thumb: draw(420, 0.65) };
+      URL.revokeObjectURL(url); resolve(out);
+    };
+    img.onerror = () => reject(new Error("image"));
+    img.src = url;
+  });
+}
+async function callPlant(payload) {
+  const res = await fetch("/api/plant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(j.error || res.status);
+  return j;
+}
+const b64 = u => u.split(",")[1];
+
+// ===== ADD FLOW =====
+let draft = null;
+function openAdd() { draft = { step: "form", kind: "single", name: "", location: "indoor", photo: null, result: null, err: "", waterEvery: 3, count: 1 }; renderAdd(); $("sheetAdd").classList.add("open"); }
+function closeAdd() { $("sheetAdd").classList.remove("open"); draft = null; }
+function photoButtons(prefix) {
+  return '<div class="acts"><label class="btn sec">' + esc(t("take_photo")) + '<input type="file" accept="image/*" capture="environment" data-photo="' + prefix + '"></label>' +
+    '<label class="btn sec">' + esc(t("from_gallery")) + '<input type="file" accept="image/*" data-photo="' + prefix + '"></label></div>';
+}
+function renderAdd() {
+  const b = $("addBody"), d = draft;
+  if (!d) return;
+  if (d.step === "form") {
+    b.innerHTML = '<div class="hd"><h3>' + esc(t("add")) + '</h3><button class="btn sec" data-act="cancelAdd">' + esc(t("cancel")) + "</button></div>" +
+      '<div class="seg"><button data-kind="single" class="' + (d.kind === "single" ? "on" : "") + '">' + esc(t("single")) + '</button><button data-kind="batch" class="' + (d.kind === "batch" ? "on" : "") + '">' + esc(t("batch")) + "</button></div>" +
+      '<div class="fld"><label>' + esc(t("name_label")) + '</label><input id="dName" maxlength="60" placeholder="' + esc(t("name_ph")) + '" value="' + esc(d.name) + '"></div>' +
+      '<p class="lbl">' + esc(t("location")) + '</p><div class="seg"><button data-loc="indoor" class="' + (d.location === "indoor" ? "on" : "") + '">' + esc(t("indoor")) + '</button><button data-loc="balcony" class="' + (d.location === "balcony" ? "on" : "") + '">' + esc(t("balcony")) + "</button></div>" +
+      photoButtons("add");
+  } else if (d.step === "loading") {
+    b.innerHTML = '<div class="hd"><h3>' + esc(t("add")) + '</h3></div><img class="preview" alt="" src="' + esc(d.photo.thumb) + '"><div class="spin"></div><p class="hint" style="text-align:center">' + esc(t("analyzing")) + "</p>";
+  } else {
+    const r = d.result;
+    b.innerHTML = '<div class="hd"><h3>' + esc(d.name || (r && r.species !== "unknown" && r.species) || t("unnamed")) + '</h3><button class="btn sec" data-act="cancelAdd">' + esc(t("cancel")) + "</button></div>" +
+      '<img class="preview" alt="" src="' + esc(d.photo.thumb) + '">' +
+      (d.err ? '<div class="errbox">' + esc(t("ai_fail", { e: d.err })) + '</div><button class="btn sec full" data-act="retryAdd">' + esc(t("retry")) + "</button>" : "") +
+      (r ? analysisHtml(r, d.kind) : "") +
+      '<div class="fld" style="margin-top:10px"><label>' + esc(t("name_label")) + '</label><input id="dName" maxlength="60" placeholder="' + esc(t("name_ph")) + '" value="' + esc(d.name) + '"></div>' +
+      '<div class="row2"><div class="fld"><label>' + esc(t("water_every")) + '</label><input id="dWater" type="number" min="1" max="30" inputmode="numeric" value="' + esc(d.waterEvery) + '"></div>' +
+      (d.kind === "batch" ? '<div class="fld"><label>' + esc(t("count")) + '</label><input id="dCount" type="number" min="1" max="999" inputmode="numeric" value="' + esc(d.count) + '"></div>' : "<div></div>") + "</div>" +
+      '<button class="btn full" data-act="saveAdd">' + esc(t("save")) + "</button>";
+  }
+}
+function analysisHtml(r, kind) {
+  let h = '<div class="chips" style="margin-bottom:6px"><span class="chip ' + esc(r.health) + '">' + esc(t("h_" + r.health)) + "</span>" + petChip(r.petSafety) + '<span class="chip">' + esc(stageText(r)) + "</span></div>";
+  h += '<p style="margin:4px 0"><span class="lbl" style="display:inline">' + esc(t("species")) + ":</span> <b>" + esc(r.species && r.species !== "unknown" ? r.species : t("unknown_species")) + "</b></p>";
+  if (kind === "batch" && r.count) h += '<p class="hint">' + esc(t("count_est", { n: r.count })) + "</p>";
+  if (r.lowLight) h += '<div class="warnbox">' + esc(t("low_light")) + "</div>";
+  if (r.change) h += '<div class="box"><b>' + esc(t("change_" + r.change)) + "</b>" + (r.changeNote ? "<br>" + esc(r.changeNote) : "") + "</div>";
+  if (r.issues && r.issues.length) h += '<div class="box"><h4>' + esc(t("issues")) + "</h4><ul>" + r.issues.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>";
+  if (r.advice && r.advice.length) h += '<div class="box"><h4>' + esc(t("advice")) + "</h4><ul>" + r.advice.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>";
+  if (r.petNote || r.petSafety !== "unknown") h += '<p class="hint">' + esc(r.petNote) + " " + esc(t("pet_disc")) + "</p>";
+  return h + '<p class="hint">' + esc(t("ai_note")) + "</p>";
+}
+async function analyzeDraft() {
+  const d = draft; d.step = "loading"; d.err = ""; renderAdd();
+  try {
+    const r = await callPlant({ image: b64(d.photo.full), mode: d.kind, name: d.name, location: d.location, lang });
+    if (draft !== d) return;
+    d.result = r; d.waterEvery = r.waterEveryDays; d.count = r.count || d.count || 1;
+  } catch (e) {
+    if (draft !== d) return;
+    d.result = null; d.err = String(e.message || e).slice(0, 90);
+  }
+  d.step = "result"; renderAdd();
+}
+$("addBody").addEventListener("input", e => {
+  if (!draft) return;
+  if (e.target.id === "dName") draft.name = e.target.value;
+  if (e.target.id === "dWater") draft.waterEvery = Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 3));
+  if (e.target.id === "dCount") draft.count = Math.max(1, parseInt(e.target.value, 10) || 1);
+});
+$("addBody").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || !draft) return;
+  if (b.dataset.kind) { draft.kind = b.dataset.kind; renderAdd(); }
+  else if (b.dataset.loc) { draft.location = b.dataset.loc; renderAdd(); }
+  else if (b.dataset.act === "cancelAdd") closeAdd();
+  else if (b.dataset.act === "retryAdd") analyzeDraft();
+  else if (b.dataset.act === "saveAdd") saveDraft();
+});
+$("addBody").addEventListener("change", async e => {
+  const inp = e.target;
+  if (!draft || !inp.dataset || inp.dataset.photo !== "add") return;
+  const f = inp.files && inp.files[0]; inp.value = "";
+  if (!f) return;
+  try { draft.photo = await processPhoto(f); } catch (err) { toast("photo"); return; }
+  analyzeDraft();
+});
+function saveDraft() {
+  const d = draft, r = d.result || {};
+  const species = r.species && r.species !== "unknown" ? r.species : "";
+  const p = {
+    id: uid(), name: (d.name || "").trim() || species || t("unnamed"), kind: d.kind, species: species, stage: r.stage || "unknown",
+    count: d.kind === "batch" ? (d.count || 1) : null, location: d.location, waterEvery: d.waterEvery || 3, lastWatered: Date.now(),
+    health: r.health || "watch", petSafety: r.petSafety || "unknown", petNote: r.petNote || "", issues: r.issues || [], advice: r.advice || [],
+    created: Date.now(), photos: [{ ts: Date.now(), thumb: d.photo.thumb, health: r.health || "watch", stage: r.stage || "unknown", count: r.count || null, note: "" }]
+  };
+  plants.push(p); persist(); closeAdd(); renderList(); toast(t("saved"));
+}
+$("btnAdd").onclick = openAdd;
+
+// ===== DETAIL =====
+let curId = null;
+function openDetail(id) { curId = id; renderDetail(); $("sheetDetail").classList.add("open"); }
+function closeDetail() { $("sheetDetail").classList.remove("open"); curId = null; renderList(); }
+function renderDetail(extra) {
+  const p = plants.find(x => x.id === curId); if (!p) return;
+  const mood = moodOf(p), last = p.photos[p.photos.length - 1];
+  const lastNote = extra || "";
+  $("detailBody").innerHTML =
+    '<div class="hd"><h3>' + esc(p.name) + '</h3><button class="btn sec" data-act="closeDetail">' + esc(t("close")) + "</button></div>" +
+    '<div class="hero" id="hero">' + charSvg(mood, 110) + '<p class="say">' + esc(t("say_" + mood)) + "</p></div>" +
+    '<div class="ringrow">' + ringHtml(p, 84) + '<div class="tx"><p class="big">' + esc(waterText(p)) + '</p><p class="lbl">' + esc(t("last_watered")) + ": " + esc(new Date(p.lastWatered).toLocaleDateString(LOC[lang], { month: "short", day: "numeric" })) + '</p><button class="btn" data-act="watered" style="margin-top:6px">' + esc(t("watered")) + "</button></div></div>" +
+    '<div class="chips" style="margin:6px 0"><span class="chip ' + esc(p.health) + '">' + esc(t("h_" + p.health)) + '</span>' + petChip(p.petSafety) + '<span class="chip">' + esc(stageText(p)) + "</span>" + (p.kind === "batch" && p.count ? '<span class="chip">x' + p.count + "</span>" : "") + "</div>" +
+    lastNote +
+    (p.issues && p.issues.length ? '<div class="box"><h4>' + esc(t("issues")) + "</h4><ul>" + p.issues.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" : "") +
+    (p.advice && p.advice.length ? '<div class="box"><h4>' + esc(t("advice")) + "</h4><ul>" + p.advice.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" : "") +
+    (p.petNote ? '<p class="hint">' + esc(p.petNote) + " " + esc(t("pet_disc")) + "</p>" : "") +
+    '<p class="lbl" style="margin-top:12px">' + esc(t("check_again")) + "</p>" + photoButtons("again") +
+    '<div id="againMsg"></div>' +
+    '<p class="lbl" style="margin-top:14px">' + esc(t("history")) + '</p><div class="hist">' +
+    p.photos.slice().reverse().map(ph => '<figure><img class="' + esc(ph.health) + '" alt="" src="' + esc(ph.thumb) + '"><figcaption>' + esc(new Date(ph.ts).toLocaleDateString(LOC[lang], { month: "short", day: "numeric" })) + "</figcaption></figure>").join("") + "</div>" +
+    '<div class="row2" style="margin-top:12px"><div class="fld"><label>' + esc(t("water_every")) + '</label><input id="eWater" type="number" min="1" max="30" inputmode="numeric" value="' + esc(p.waterEvery) + '"></div>' +
+    (p.kind === "batch" ? '<div class="fld"><label>' + esc(t("count")) + '</label><input id="eCount" type="number" min="1" max="999" inputmode="numeric" value="' + esc(p.count || 1) + '"></div>' : '<div class="fld"><label>' + esc(t("location")) + '</label><select id="eLoc"><option value="indoor"' + (p.location === "indoor" ? " selected" : "") + ">" + esc(t("indoor")) + '</option><option value="balcony"' + (p.location === "balcony" ? " selected" : "") + ">" + esc(t("balcony")) + "</option></select></div>") + "</div>" +
+    '<div class="fld"><label>' + esc(t("name_label")) + '</label><input id="eName" maxlength="60" value="' + esc(p.name) + '"></div>' +
+    '<button class="btn dng full" data-act="del">' + esc(t("delete")) + "</button>";
+}
+$("detailBody").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const p = plants.find(x => x.id === curId); if (!p) return;
+  if (b.dataset.act === "closeDetail") closeDetail();
+  else if (b.dataset.act === "watered") {
+    p.lastWatered = Date.now(); persist(); renderDetail();
+    const h = $("hero"); if (h) { h.classList.add("bounce"); }
+    toast(t("watered"));
+  } else if (b.dataset.act === "del") {
+    if (confirm(t("confirm_delete"))) { plants = plants.filter(x => x.id !== p.id); persist(); closeDetail(); }
+  }
+});
+$("detailBody").addEventListener("change", async e => {
+  const el = e.target, p = plants.find(x => x.id === curId); if (!p) return;
+  if (el.id === "eWater") { p.waterEvery = Math.max(1, Math.min(30, parseInt(el.value, 10) || p.waterEvery)); persist(); renderDetail(); }
+  else if (el.id === "eCount") { p.count = Math.max(1, parseInt(el.value, 10) || 1); persist(); }
+  else if (el.id === "eLoc") { p.location = el.value; persist(); }
+  else if (el.id === "eName") { p.name = el.value.trim() || p.name; persist(); const h = $("detailBody").querySelector(".hd h3"); if (h) h.textContent = p.name; }
+  else if (el.dataset && el.dataset.photo === "again") {
+    const f = el.files && el.files[0]; el.value = ""; if (!f) return;
+    const msg = $("againMsg"); msg.innerHTML = '<div class="spin"></div><p class="hint" style="text-align:center">' + esc(t("analyzing")) + "</p>";
+    try {
+      const ph = await processPhoto(f), prev = p.photos[p.photos.length - 1];
+      const since = Math.max(0, Math.round((startOfDay(Date.now()) - startOfDay(p.lastWatered)) / DAY));
+      const r = await callPlant({ image: b64(ph.full), prevImage: prev ? b64(prev.thumb) : undefined, mode: p.kind, name: p.name, location: p.location, lang, daysSinceWatered: since });
+      p.health = r.health; p.stage = r.stage; p.issues = r.issues; p.advice = r.advice; p.petNote = r.petNote || p.petNote;
+      if (p.petSafety === "unknown" && r.petSafety !== "unknown") p.petSafety = r.petSafety;
+      if (p.kind === "batch" && r.count) p.count = r.count;
+      if (r.species && r.species !== "unknown" && !p.species) p.species = r.species;
+      p.photos.push({ ts: Date.now(), thumb: ph.thumb, health: r.health, stage: r.stage, count: r.count || null, note: r.changeNote || "" });
+      persist();
+      const note = (r.lowLight ? '<div class="warnbox">' + esc(t("low_light")) + "</div>" : "") +
+        (r.change ? '<div class="box"><b>' + esc(t("change_" + r.change)) + "</b>" + (r.changeNote ? "<br>" + esc(r.changeNote) : "") + "</div>" : "");
+      renderDetail(note);
+    } catch (err) {
+      msg.innerHTML = '<div class="errbox">' + esc(t("ai_fail", { e: String(err.message || err).slice(0, 90) })) + "</div>";
+    }
+  }
+});
+
+// ===== SETTINGS / LANGUAGE / THEME =====
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
+$("btnSettings").onclick = () => $("sheetSet").classList.add("open");
+$("selLang").onchange = e => { lang = e.target.value; lsSet("pl_lang", lang); applyLang(); };
+$("themes").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; theme = b.dataset.theme; lsSet("pl_theme", theme); applyTheme(); });
+function renderThemes() { $("themes").innerHTML = Object.keys(THEMES).map(k => '<button data-theme="' + k + '" class="' + (k === theme ? "on" : "") + '"><i style="background:' + THEMES[k][1] + '"></i>' + esc(t(THEMES[k][0])) + "</button>").join(""); }
+function applyTheme() {
+  if (theme === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", theme);
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.content = THEME_COLOR[theme] || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? THEME_COLOR.dark : THEME_COLOR.light);
+  renderThemes();
+}
+function applyLang() {
+  document.documentElement.lang = lang === "zh" ? "zh-Hant" : lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $("selLang").innerHTML = Object.keys(LANGS).map(k => '<option value="' + k + '"' + (k === lang ? " selected" : "") + ">" + LANGS[k] + "</option>").join("");
+  renderThemes(); renderList();
+  if (draft) renderAdd();
+  if (curId) renderDetail();
+}
+
+// ===== START =====
+applyTheme();
+applyLang();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
